@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <%# includeのパスは相対で指定する %> 
+  <%- include("_share/metadata.ejs") %> 
+  <%- include("_share/stylesheets.ejs") %> 
+  <link rel="stylesheet" href="/public/stylesheets/index.css">
   <title>Document</title>
 </head>
 <body>
-  <h1>こんにちは、世界!</h1>
+  <div class="outerframe">
+    <%- include("_share/navbar.ejs") %> 
+    <h1>こんにちは、世界!</h1>
+    <i class="fas fa-fw fa-utensils"></i>
+    <i class="fas fa-fw fa-search"></i>
+    <%- include("_share/footer.ejs") %> 
+  </div>
+  <%- include("_share/javascripts.ejs") %> 
 </body>
 </html>
