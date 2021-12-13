@@ -29,6 +29,39 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 app.use(expressMWaccessLogger());
 // モジュール形式の route handler を使用
 app.use("/", require("./routes/index"));
+// テストコード
+app.use("/test", async (req, res, next) => {
+  const path = require("path");
+  const {promisify} = require("util");
+  const mysql = require("mysql");
+  const config = require("./config/mysql.config");
+  const {sql} = require("./lib/util/mysql-fileloader")({ root: path.join(__dirname, "./lib/database/sql") });
+  const conn = mysql.createConnection({
+    host: config.host,
+    port: config.port,
+    user: config.user,
+    password: config.password,
+    database: config.database
+  });
+
+  const client = {
+    connect: promisify(conn.connect).bind(conn),
+    query: promisify(conn.query).bind(conn),
+    end: promisify(conn.end).bind(conn)
+  };
+
+  try {
+    await client.connect();
+    const data = await client.query(await sql("SELECT_SHOP_BASIC_BY_ID.sql"));
+    console.log(data);
+  } catch (error) {
+    next(error);
+  } finally {
+    await client.end();
+  }
+
+  res.end("OK");
+});
 
 // Expressミドルウェアとしてアプリケーションロガーを設定
 // エラー捕捉するので最後に配置
