@@ -6,7 +6,9 @@ module.exports = function(options) {
   return function(err, req, res, next) {
     // Errorオブジェクトを渡すとスタックトレース部分も表示される
     appLogger.error(err);
-    // ミドルウェア関数は next を必ず callする必要がある
+    // ミドルウェア関数がリクエストレスポンスサイクルを終了しない場合は、
+    // next() を呼び出して、次のミドルウェア関数に制御を渡す必要がある。
+    // そうしないと、リクエストはハングしたままになる
     next(err);
   };
 };

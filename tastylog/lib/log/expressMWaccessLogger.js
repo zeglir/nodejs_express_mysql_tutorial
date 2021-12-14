@@ -8,6 +8,7 @@ module.exports = function(options) {
   // ログレベル指定が無ければ auto を指定
   options.level = options.level || LOG_LEVEL_AUTO;
 
-  // log4js の connectLogger は Expressミドルウェア関数を返す
+  // log4js の connectLogger は、
+  // アクセスログを出力する Expressミドルウェア関数を返す
   return log4js.connectLogger(accessLogger, options);
 };

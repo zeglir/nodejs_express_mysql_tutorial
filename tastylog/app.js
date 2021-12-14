@@ -29,37 +29,24 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 app.use(expressMWaccessLogger());
 // モジュール形式の route handler を使用
 app.use("/", require("./routes/index"));
-// テストコード
+// mysql使用のミドルウェアテストコード
 app.use("/test", async (req, res, next) => {
-  const path = require("path");
-  const {promisify} = require("util");
-  const mysql = require("mysql");
-  const config = require("./config/mysql.config");
-  const {sql} = require("./lib/util/mysql-fileloader")({ root: path.join(__dirname, "./lib/database/sql") });
-  const conn = mysql.createConnection({
-    host: config.host,
-    port: config.port,
-    user: config.user,
-    password: config.password,
-    database: config.database
-  });
-
-  const client = {
-    connect: promisify(conn.connect).bind(conn),
-    query: promisify(conn.query).bind(conn),
-    end: promisify(conn.end).bind(conn)
-  };
+  const {mysqlClient, sqlAsync} = require("./lib/database/client");
 
   try {
-    await client.connect();
-    const data = await client.query(await sql("SELECT_SHOP_BASIC_BY_ID.sql"));
+    // await mysqlClient.connect();
+    // const data = await mysqlClient.query(await sqlAsync("SELECT_SHOP_BASIC_BY_ID.sql"), [1]);
+    const data = await mysqlClient.executeQuery(await sqlAsync("SELECT_SHOP_BASIC_BY_ID.sql"), [1]);
+    // console.log(data);
     console.log(data);
   } catch (error) {
+    // エラーの場合は中断して次の処理に引き渡す
     next(error);
   } finally {
-    await client.end();
+    // Connectionは必ずクローズ
+    // await mysqlClient.end();
   }
-
+  // リクエストレスポンスサイクルを終了
   res.end("OK");
 });
 
