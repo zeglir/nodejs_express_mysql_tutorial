@@ -17,6 +17,14 @@ app.set("view engine", "ejs");
 // レスポンスヘッダに x-powered-by: Express を出力しない
 app.disable("x-powered-by");
 
+// EJSにグローバルメソッドを公開する
+app.use((req, res, next) => {
+  res.locals.moment = require("moment");
+  res.locals.padding = require("./lib/math/math").padding;
+  res.locals.round = require("./lib/math/math").round;
+  next();
+});
+
 // Expressで静的コンテンツ配信の設定
 // faviconを serve-faviconで配信
 app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
@@ -28,7 +36,9 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 // アクセスログを有効にする
 app.use(expressMWaccessLogger());
 // モジュール形式の route handler を使用
+app.use("/shops", require("./routes/shop"));
 app.use("/", require("./routes/index"));
+
 // mysql使用のミドルウェアテストコード
 app.use("/test", async (req, res, next) => {
   const {mysqlClient, sqlAsync} = require("./lib/database/client");
