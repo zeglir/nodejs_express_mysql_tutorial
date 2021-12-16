@@ -12,7 +12,7 @@ SELECT
 	t_shop.status,
 	t_shop.geolocation_latitude,
 	t_shop.geolocation_longitude,
-	group_concat(m_category.name separator ", ") -- 集約したcategory名をカンマ区切りで表示する
+	group_concat(m_category.name separator ", ") AS categories -- 集約したcategory名をカンマ区切りで表示する
 FROM t_shop
 	LEFT OUTER JOIN t_shop_category
   ON t_shop.id = t_shop_category.shop_id
