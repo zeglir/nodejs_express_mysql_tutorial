@@ -96,7 +96,12 @@
             </div>
           </div>
           <div>
-            <!-- 保留：店舗のレビュー -->
+            <%# 店舗のレビュー %>
+            <% for (const review of reviews) { %>
+              <%# shopのidをプロパティとして付加 %> 
+              <% review.shop = id %> 
+              <%- include("./review.ejs", review) %> 
+            <% } %>
           </div>
         </div>
         <%# 4/12列を使用 %> 
