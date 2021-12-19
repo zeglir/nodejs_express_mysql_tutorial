@@ -41,7 +41,7 @@ app.use("/shops", require("./routes/shop"));
 app.use("/", require("./routes/index"));
 
 // mysql使用のミドルウェアテストコード
-app.use("/test", async (req, res, next) => {
+app.get("/test", async (req, res, next) => {
   const {mysqlClient, sqlAsync} = require("./lib/database/client");
 
   try {
@@ -59,6 +59,21 @@ app.use("/test", async (req, res, next) => {
   }
   // リクエストレスポンスサイクルを終了
   res.end("OK");
+});
+
+// トランザクション実行のミドルウェアテストコード
+app.get("/trantest", async (req, res, next) => {
+  const {mysqlClient} = require("./lib/database/client");
+  let tran;
+  try {
+    tran = await mysqlClient.beginTransaction();
+    await tran.executeQuery("UPDATE t_shop SET score = ? WHERE id = ?", [3.92, 1]);
+    await tran.commit();
+    res.end("OK");
+  } catch(err) {
+    await tran.rollback();
+    next(err);
+  }
 });
 
 // Expressミドルウェアとしてアプリケーションロガーを設定
