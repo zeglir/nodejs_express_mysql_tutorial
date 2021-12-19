@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <%# includeのパスは相対で指定する %> 
+  <%- include("../_share/metadata.ejs") %> 
+  <%- include("../_share/stylesheets.ejs") %> 
+  <link rel="stylesheet" href="/public/stylesheets/shop.css">
+  <title>Document</title>
+</head>
+<body>
+  <div class="outerframe">
+    <%- include("../_share/navbar.ejs") %>
+    <main class="container">
+      <%# タイトル欄 %> 
+      <div class="border-bottom my-5">
+        <h1 class="display-4"><%= name %></h1>
+      </div>
+      <%# 評価欄 %>
+      <p class="h3">
+        <%# 星 %>
+        <%# common.cssで定義されている %> 
+        <span class="rate-star" style="--rate: <%= (score/5.00)*100 %>%;"></span>
+        <%# 評価値 %> 
+        <span><%= padding(score) %> </span>
+      </p>
+
+      <%# 画像 %> 
+      <div>
+        <img class="image-fluid" src="/public/images/dummy/1150x250.png">
+      </div>
+
+      <div class="row">
+        <%# 8/12列を使用 %> 
+        <div class="col-md-8">
+          <%# 店舗の詳細情報 %> 
+          <%# 本のアイコン %> 
+          <h2 class="border-bottom mt-5 mb-2"><i class="fas fa-fw fa-book"></i>店舗情報</h2>
+          <table class="table table-bordered">
+            <%# 列のスタイル一括指定 %>  
+            <colgroup>
+              <%# 1列目：背景色と幅をroot要素のフォントサイズの10倍に指定 %> 
+              <col class="bg-light" style="width: 10rem;">
+              <col>
+            </colgroup>
+            <tr>
+              <th>店名</th>
+              <td><%= name %></td>
+            </tr>
+            <tr>
+              <th>カテゴリー</th>
+              <td><%= categories %></td>
+            </tr>
+            <tr>
+              <th>電話</th>
+              <td><%= tel %></td>
+            </tr>
+            <tr>
+              <th>住所</th>
+              <td>
+                <div><%= address %></div>
+                <div id="mapid"></div>
+              </td>
+            </tr>
+            <tr>
+              <th>定休日</th>
+              <td><%= holiday %></td>
+            </tr>
+            <tr>
+              <th>座席数</th>
+              <td><%= seats %></td>
+            </tr>
+            <tr>
+              <th>価格帯</th>
+              <td><%= price_range %></td>
+            </tr>
+          </table>
+
+          <%# 口コミ %> 
+          <%# Bootstrapのクラスで CSSの position: relative と同じ %> 
+          <div class="position-relative">
+            <%# コメントのアイコン %> 
+            <h2 class="border-bottom my-5 pb-2"><i class="fas fa-fw fa-comments"></i>口コミ</h2>
+            <%# 投稿ボタン %>
+            <%# Bootstrapのクラスで CSSの position: absolute と同じ %>
+            <%# 
+              親要素が position:static のときはウィンドウの左上、
+              親要素が position:static 以外の時は親要素の左上を基準位置とし、
+              top, left あるいは right, bottom で指定されたオフセットの絶対位置に表示します。
+            %>
+            <%# 
+              ここでは親要素 position:relative の中で 
+              position:absolute に right: 0 を指定しているので右寄せのボタンになる 
+            %>  
+            <div class="position-absolute" style="right: 0px; top: 0px;">
+              <a href="#" class="btn btn-outline-success">投稿する</a>
+            </div>
+          </div>
+          <div>
+            <%# 店舗のレビュー %>
+            <% for (const review of reviews) { %>
+              <%# shopのidをプロパティとして付加 %> 
+              <% review.shop = id %> 
+              <%- include("./review.ejs", review) %> 
+            <% } %>
+          </div>
+        </div>
+        <%# 4/12列を使用 %> 
+        <div class="col-md-4">
+          <%# おススメのお店 %>
+          <%# ハートのアイコン %> 
+          <h2 class="border-bottom my-5 pb-2"><i class="fas fa-fw fa-heart"></i>おススメのお店</h2>
+          <!-- 保留：Recommend -->
+        </div>
+      </div>
+    </main>
+    <%- include("../_share/footer.ejs") %> 
+  </div>
+  <%- include("../_share/javascripts.ejs") %>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<div class="row">
+  <%# 3/12列を使用 %> 
+  <%# テキストが枠に収まらない場合は省略記法にする %> 
+  <div class="col-sm-3 text-truncate">
+    <%# ユーザアイコンとユーザ名 %> 
+    <span class="h1"><i class="fas fa-fw fa-user"></i></span>
+    <span><%= user_name %></span>
+  </div>
+
+  <%# 9/12列を使用 %> 
+  <div class="col-sm-9">
+    <%# カード形式で口コミを表示 %> 
+    <div class="card bg-light mb-3 balloon">
+
+      <%# 1つのカードを表示 %> 
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-11">
+            <%# 口コミテキスト %> 
+            <p class="card-text" style="min-height: 2rem;"><%= description %></p>
+            <%# 訪問日と評価の★ %> 
+            <p class="card-text text-muted">
+              <small>
+                訪問日：<%= visit ? moment(visit).format("YYYY/MM/DD") : "-" %> 
+                <span class="rate-star" style="--rate: <%= (score/5.00)*100 %>%;"></span><%= padding(score) %>
+              </small>
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

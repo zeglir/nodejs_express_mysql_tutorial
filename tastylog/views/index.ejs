@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <%# includeのパスは相対で指定する %> 
+  <%- include("_share/metadata.ejs") %> 
+  <%- include("_share/stylesheets.ejs") %> 
+  <link rel="stylesheet" href="/public/stylesheets/index.css">
+  <title>Document</title>
+</head>
+
+<body>
+  <div class="outerframe">
+    <%- include("_share/navbar.ejs") %> 
+
+    <%# containerを中央に均等配置 %> 
+    <main role="main" class="contanier d-flex justify-content-md-center">
+      <%# flexアイテムを縦方向の中央に配置、12列中の8列を確保 %> 
+      <div class="align-self-center col-md-8">
+        <%# ロゴと強調テキスト %> 
+        <h1 class="display-1 text-center"><i class="fas fa-fw fa-utensils"></i>Search</h1>
+        <%# フォーム %> 
+        <form class="my-5" action="/search" method="GET">
+          <%# フォームグループ 中央に均等配置 %> 
+          <div class="form-group row justify-content-center">
+            <%# インプットグループ（検索フィールド＋ボタン） %> 
+            <div class="input-group col-sm-8 my-3">
+              <%# 検索フィールド %> 
+              <input type="text" class="form-control" id="keyword" name="keyword" autofocus="autofocus">
+              <%# 検索ボタン %> 
+              <div class="input-group-append">
+                <button class="btn btn-secondary" type="submit"><i class="fas fa-fw fa-search"></i></button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <%- include("_share/footer.ejs") %> 
+  </div>
+  <%- include("_share/javascripts.ejs") %> 
+</body>
+</html>

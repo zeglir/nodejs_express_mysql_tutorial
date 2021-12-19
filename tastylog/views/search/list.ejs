@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <%# includeのパスは相対で指定する %> 
+  <%- include("../_share/metadata.ejs") %> 
+  <%- include("../_share/stylesheets.ejs") %> 
+  <link rel="stylesheet" href="/public/stylesheets/shop.css">
+  <title>Document</title>
+</head>
+<body>
+  <div class="outerframe">
+    <%- include("../_share/navbar.ejs") %>
+    <main role="main" class="container">
+      <%# 検索窓 %> 
+      <div class="border-bottom">
+        <%# フォーム %> 
+        <form action="/search" method="GET" class="my-5">
+          <%# フォームグループ 中央に均等配置 %> 
+          <div class="form-group row justify-content-center">
+            <%# インプットグループ（検索フィールド＋ボタン） %> 
+            <div class="input-group col-sm-8 my-3">
+              <%# 検索フィールド（初期表示あり） %> 
+              <input type="text" class="form-control" id="keyword" name="keyword" 
+                value="<%= keyword %>" autofocus="autofocus">
+              <%# 検索ボタン %> 
+              <div class="input-group-append">
+                <button class="btn btn-secondary" type="submit"><i class="fas fa-fw fa-search"></i></button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <%# 検索結果 %> 
+      <div class="card-columns mt-5">
+        <% for (const item of results) { %>
+          <%- include("./item.ejs", item) %> 
+        <% } %>  
+      </div>
+
+      <%# ページネーション %> 
+      <nav>
+        <ul class="pagination justify-content-center">
+          <% for (let i = 1; i <= pagination.max; i++) { %>
+            <% if (pagination.cur !== i) { %> 
+              <%# 現在ページ以外の表示 %> 
+              <%# 最初の3ページ、最後の3ページ、現在ページの前後2ページ 以外は . で省略表記にする %> 
+              <li class="page-item">
+                <% if (i <= 3 || (pagination.cur - 3 < i && pagination.cur + 3 > i) || pagination.max -3 <= i) { %> 
+                  <a class="page-link" href="/search?keyword=<%= keyword %>&page=<%= i %>"><%= i %></a>
+                <% } else { %>
+                  .
+                <% } %>
+              </li>
+            <% } else { %> 
+              <%# 現在ページの表示 %>
+              <%# アンカー無効にしてactive表示 %>  
+              <li class="page-item active">
+                <span class="page-link disable"><%= i %></span>
+              </li>
+            <% } %> 
+          <% } %>
+        </ul>
+      </nav>
+    </main>
+    <%- include("../_share/footer.ejs") %> 
+  </div>
+  <%- include("../_share/javascripts.ejs") %>
+  </body>
+</html>
