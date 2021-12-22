@@ -35,7 +35,15 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 // Expressで動的コンテンツ配信の設定
 // アクセスログを有効にする
 app.use(expressMWaccessLogger());
+
+// ExpressでPOSTされたformの解析を有効にする
+// optionの extended が trueの場合、解析に qsライブラリを使う
+// falseにすると、querystringライブラリを使う
+// ※デフォルト値が true なので明示しなくてもよいはず
+app.use(express.urlencoded({extended: true}));
+
 // モジュール形式の route handler を使用
+app.use("/account", require("./routes/account"));
 app.use("/search", require("./routes/search"));
 app.use("/shops", require("./routes/shop"));
 app.use("/", require("./routes/index"));
