@@ -19,6 +19,16 @@
 
       <div>
         <form action="/account/reviews/regist/confirm" method="POST">
+          <%# エラーメッセージ %>
+          <%# errorは存在しないときがあるので locals.をつけないと落ちる %> 
+          <% if (locals.error) { %>
+            <div class="alert alert-danger">
+              <% Object.keys(error).forEach(key => { %>
+                <p><i class="fas fa-fw fa-exclamation-circle"></i><%= error[key] %></p>
+              <% }) %>
+            </div>
+          <% } %>
+
           <%# 店舗ID（hidden） %>
           <input type="hidden" id="shopId" name="shopId" value="<%= shopId %>">
           <%# 店舗名 %> 
@@ -32,7 +42,7 @@
           <div class="form-group row">
             <label for="visit" class="col-sm-2 col-form-label">訪問日</label>
             <div class="col-sm-10">
-              <input type="text" class="form-control" id="visit" name="visit" value="" placeholder="yyyy/mm/dd">
+              <input type="text" class="form-control" id="visit" name="visit" value="<%= review.visitDisp %>" placeholder="yyyy/mm/dd">
             </div>
           </div>
           <%# 評価 %> 
@@ -40,17 +50,17 @@
             <label for="score" class="col-sm-2 col-form-label">評価</label>
             <div class="col-sm-10">
               <select class="form-control" name="score" id="score">
-                <option>5.0</option>
-                <option>4.5</option>
-                <option>4.0</option>
-                <option>3.5</option>
-                <option selected>3.0</option>
-                <option>2.5</option>
-                <option>2.0</option>
-                <option>1.5</option>
-                <option>1.0</option>
-                <option>0.5</option>
-                <option>0.0</option>
+                <option <%= (review.score && review.score === 5.0) ? "selected" : "" %> >5.0</option>
+                <option <%= (review.score && review.score === 4.5) ? "selected" : "" %> >4.5</option>
+                <option <%= (review.score && review.score === 4.0) ? "selected" : "" %> >4.0</option>
+                <option <%= (review.score && review.score === 3.5) ? "selected" : "" %> >3.5</option>
+                <option <%= (typeof(review.score) === "undefined" || review.score && review.score === 3.0) ? "selected" : "" %> >3.0</option>
+                <option <%= (review.score && review.score === 2.5) ? "selected" : "" %> >2.5</option>
+                <option <%= (review.score && review.score === 2.0) ? "selected" : "" %> >2.0</option>
+                <option <%= (review.score && review.score === 1.5) ? "selected" : "" %> >1.5</option>
+                <option <%= (review.score && review.score === 1.0) ? "selected" : "" %> >1.0</option>
+                <option <%= (review.score && review.score === 0.5) ? "selected" : "" %> >0.5</option>
+                <option <%= (review.score && review.score === 0.0) ? "selected" : "" %> >0.0</option>
               </select>
             </div>
           </div>
@@ -58,7 +68,7 @@
           <div class="form-group row">
             <label for="description" class="col-sm-2 col-form-label">本文</label>
             <div class="col-sm-10">
-              <textarea class="form-control" name="description" id="description" rows="5"></textarea>
+              <textarea class="form-control" name="description" id="description" rows="5"><%= review.description %></textarea>
             </div>
           </div>
           <%# 確認 %> 
