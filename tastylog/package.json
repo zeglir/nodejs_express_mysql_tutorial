@@ -12,8 +12,11 @@
     "eslint": "^8.4.0"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.6",
     "ejs": "^3.1.6",
     "express": "^4.17.1",
+    "express-mysql-session": "^2.1.7",
+    "express-session": "^1.17.2",
     "log4js": "^6.3.0",
     "moment": "^2.29.1",
     "mysql": "^2.18.1",

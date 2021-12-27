@@ -1,9 +1,13 @@
-const port = process.env.PORT;
+const appconfig = require("./config/application.config");
+const dbconfig = require("./config/mysql.config");
 const path = require("path");
 const logger = require("./lib/log/logger");
 const expressMWappLogger = require("./lib/log/expressMWappLogger");
 const expressMWaccessLogger = require("./lib/log/expressMWaccessLogger");
 const favicon = require("serve-favicon");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const MySQLStore = require("express-mysql-session")(session);
 const express = require("express");
 const app = express();
 
@@ -41,6 +45,30 @@ app.use(expressMWaccessLogger());
 // falseにすると、querystringライブラリを使う
 // ※デフォルト値が true なので明示しなくてもよいはず
 app.use(express.urlencoded({extended: true}));
+// cookie-parserを有効にする
+app.use(cookieParser());
+// sessionを有効にする
+// cookieを使うので、cookie設定の後で行う
+app.use(session({
+  store: new MySQLStore({
+    host: dbconfig.host,
+    port: dbconfig.port,
+    user: dbconfig.user,
+    password: dbconfig.password,
+    database: dbconfig.database
+  }),
+  secret: appconfig.security.SECRET_KEY,
+  resave: false, // sessionに変更がない場合に強制的に保存するかどうか。デフォルトtrueだがfalse推奨
+  saveUninitialized: true, // 生成しただけで未修整のsessionを保存するかどうか
+  name: "sid"
+}));
+
+// cookieテストのミドルウェアコード
+app.use((req, res, next) => {
+  console.log(req.cookies.message);
+  res.cookie("message", "Hello World");
+  next();
+});
 
 // モジュール形式の route handler を使用
 app.use("/account", require("./routes/account"));
@@ -89,9 +117,9 @@ app.get("/trantest", async (req, res, next) => {
 app.use(expressMWappLogger());
 
 // アプリケーションを指定ポートで起動
-app.listen(port, () => {
+app.listen(appconfig.port, () => {
   // ロガーで直接出力
   // logger.defaultLogger.info(`Application listening on port:${port}`);
-  logger.appLogger.info(`Application listening on port:${port}`);
+  logger.appLogger.info(`Application listening on port:${appconfig.port}`);
 });
 

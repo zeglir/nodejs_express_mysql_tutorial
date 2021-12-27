@@ -83,14 +83,18 @@ router.post("/regist/execute", async (req, res, next) => {
   }
 
   try {
+    // トランザクション開始
     tran = await mysqlClient.beginTransaction();
+    // t_shopの行ロック取得
     await tran.executeQuery(await sqlAsync("SELECT_SHOP_BY_ID_FOR_UPDATE"), [shopId]);
+    // t_reviewの登録
     await tran.executeQuery(await sqlAsync("INSERT_SHOP_REVIEW"), [
       shopId, userId, review.score, review.visit, review.description
     ]);
+    // t_shopの平均スコア更新
     await tran.executeQuery(await sqlAsync("UPDATE_SHOP_SCORE_BY_ID"), [shopId, shopId]);
     await tran.commit();
-    res.render("./account/reviews/regist-complete");
+    res.render("./account/reviews/regist-complete", {shopId});
   } catch(err) {
     await tran.rollback();
     next(err);

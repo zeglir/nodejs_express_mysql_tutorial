@@ -1,12 +1,32 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <%# includeのパスは相対で指定する %> 
+  <%- include("../../_share/metadata.ejs") %> 
+  <%- include("../../_share/stylesheets.ejs") %> 
   <title>Document</title>
 </head>
+
 <body>
-  
+  <div class="outerframe">
+    <%- include("../../_share/navbar.ejs") %> 
+
+    <%# containerを配置 %> 
+    <main role="main" class="container">
+      <%# タイトルラベル %> 
+      <div class="border-bottom my-5">
+        <h1>口コミの投稿</h1>
+      </div>
+
+      <%# 完了メッセージ %> 
+      <div class="alert alert-success my-5">投稿が完了しました</div>
+      <%# 店舗の詳細画面に戻る %> 
+      <div class="text-center my-5">
+        <a class="btn btn-outline-primary" href="/shops/<%= shopId %>">ショップページに戻る</a>
+      </div>
+    </main>
+    <%- include("../../_share/footer.ejs") %> 
+  </div>
+  <%- include("../../_share/javascripts.ejs") %> 
 </body>
 </html>
