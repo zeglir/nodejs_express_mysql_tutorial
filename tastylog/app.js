@@ -59,7 +59,7 @@ app.use(session({
   }),
   secret: appconfig.security.SECRET_KEY,
   resave: false, // sessionに変更がない場合に強制的に保存するかどうか。デフォルトtrueだがfalse推奨
-  saveUninitialized: true, // 生成しただけで未修整のsessionを保存するかどうか
+  saveUninitialized: true, // 生成しただけで未変更のsessionを保存するかどうか
   name: "sid"
 }));
 

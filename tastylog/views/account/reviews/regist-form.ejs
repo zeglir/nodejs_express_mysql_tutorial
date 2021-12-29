@@ -29,6 +29,8 @@
             </div>
           <% } %>
 
+          <%# CSRF対策用 %> 
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <%# 店舗ID（hidden） %>
           <input type="hidden" id="shopId" name="shopId" value="<%= shopId %>">
           <%# 店舗名 %> 

@@ -6,6 +6,10 @@ const btnsubmit_onclick = function(event) {
   $form.attr("method", $submit.data("method"));
   $form.attr("action", $submit.data("action"));
   $form.submit();
+  // submitボタンのイベントを外して非活性化させる
+  $submit.off().prop("disabled", true);
+  // formのsubmitを無効にする
+  $form.on("submit", false);
 };
 
 // すべての submitボタンに対して、click時イベントハンドラを登録する
