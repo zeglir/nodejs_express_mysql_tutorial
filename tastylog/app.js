@@ -4,10 +4,12 @@ const path = require("path");
 const logger = require("./lib/log/logger");
 const expressMWappLogger = require("./lib/log/expressMWappLogger");
 const expressMWaccessLogger = require("./lib/log/expressMWaccessLogger");
+const accesscontrol = require("./lib/security/accesscontrol");
 const favicon = require("serve-favicon");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
+const flash = require("connect-flash");
 const express = require("express");
 const app = express();
 
@@ -62,6 +64,12 @@ app.use(session({
   saveUninitialized: true, // 生成しただけで未変更のsessionを保存するかどうか
   name: "sid"
 }));
+// connect-flashを有効にする
+// sessionを使うので、session設定の後で行う
+app.use(flash());
+// passport関連の初期化をまとめて行う
+// initializeで必要なミドルウェアを配列でまとめて返して、スプレッド構文...で展開して指定する
+app.use(...accesscontrol.initialize());
 
 // cookieテストのミドルウェアコード
 app.use((req, res, next) => {
