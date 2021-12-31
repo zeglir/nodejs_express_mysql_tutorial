@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <%# includeのパスは相対で指定する %> 
+  <%- include("../_share/metadata.ejs") %> 
+  <%- include("../_share/stylesheets.ejs") %> 
+  <title>Document</title>
+</head>
+
+<body>
+  <div class="outerframe">
+    <%- include("../_share/navbar.ejs") %>
+
+    <div class="container">
+      <%# タイトル %> 
+      <h1 class="my-5">会員ページ</h1>
+
+      <div class="row">
+        <%# 左メニュー %> 
+        <nav class="col-md-3 list-group ml-3">
+          <a href="" class="list-group-item list-group-item-action">ホーム</a>
+          <a href="" class="list-group-item list-group-item-action">My食レポ</a>
+          <a href="" class="list-group-item list-group-item-action">設定</a>
+        </nav>
+        <%# コンテンツ表示部分 %> 
+        <main class="col-md-9"></main>
+      </div>
+    </div>
+
+    <%- include("../_share/footer.ejs") %> 
+  </div>
+  <%- include("../_share/javascripts.ejs") %> 
+</body>
+</html>

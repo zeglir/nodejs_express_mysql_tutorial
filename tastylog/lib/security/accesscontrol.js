@@ -5,12 +5,16 @@ const PRIVILEGE = {
   NORMAL: "normal"
 };
 
+// passport.use()で、Strategyの設定（configure）を行う
+// ここでは passport-local の設定を行う
 passport.use(
-  // passport.authenticate で Strategyを参照すつときの key
+  // passport.authenticate で Strategyを参照するときの key
   // 指定しないと "local" が key になる
   "local-strategy",
   new LocalStrategy({
+    // POSTの bodyに設定されるユーザ名のプロパティ名（デフォルトは "username"）
     usernameField: "username",
+    // POSTの bodyに設定されるパスワードのプロパティ名（デフォルトは "password"）
     passwordField: "password",
     // trueにすると、VerifyFunctionの第一引数に req が追加される
     passReqToCallback: true
@@ -24,15 +28,25 @@ passport.use(
       return done(err);
     }
 
+    // 認証処理
     if (results.length === 1 && results[0].password === password) {
+      // 認証成功時は適切な user情報を doneの第二引数で返す
       const user = {
         id: results[0].id,
         name: results[0].name,
         email: results[0].email,
         permissions: [PRIVILEGE.NORMAL]
       };
-      return done(null, user);
+      // セッションハイジャック対策として sessionを再作成する
+      req.session.regenerate((err) => {
+        if (err) {
+          return done(err);
+        } else {
+          return done(null, user);
+        }
+      });
     } else {
+      // 認証失敗時は doneの第二引数に falseを指定する
       req.flash("error", "ユーザー名またはパスワードが間違っています。");
       req.flash("error", "入力内容を見直してください。");
       return done(null, false);
@@ -98,8 +112,20 @@ const authenticate = function() {
   );
 };
 
-const authorize = function() {
-
+// 認可処理
+// Expressミドルウェア関数を返す
+// ログイン状態かどうかを確認して、引数で指定した権限を保持しているか確認する
+// （今回の実装ではログイン成功時の VerifyFunctionの中で user作成時に permissionsを設定している
+// ログイン状態でない場合は、ログイン画面にリダイレクトする
+const authorize = function(privilege) {
+  return (req, res, next) => {
+    if (req.isAuthenticated() &&
+        (req.user.permissions || []).indexOf(privilege) >= 0) {
+      next();
+    } else {
+      res.redirect("/account/login");
+    }
+  };
 };
 
 module.exports = {

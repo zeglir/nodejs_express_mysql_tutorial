@@ -1,3 +1,4 @@
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const appconfig = require("./config/application.config");
 const dbconfig = require("./config/mysql.config");
 const path = require("path");
@@ -59,6 +60,10 @@ app.use(session({
     password: dbconfig.password,
     database: dbconfig.database
   }),
+  cookie: {
+    // 本番環境ならば cookieの secure属性を true にする
+    secure: IS_PRODUCTION
+  },
   secret: appconfig.security.SECRET_KEY,
   resave: false, // sessionに変更がない場合に強制的に保存するかどうか。デフォルトtrueだがfalse推奨
   saveUninitialized: true, // 生成しただけで未変更のsessionを保存するかどうか
