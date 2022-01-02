@@ -1,9 +1,22 @@
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
+const bcrypt = require("bcrypt");
 const {mysqlClient, sqlAsync} = require("../database/client");
 const PRIVILEGE = {
   NORMAL: "normal"
 };
+const {
+  ACCOUNT_LOCK_WINDOW,
+  ACCOUNT_LOCK_THRESHOLD,
+  ACCOUNT_LOCK_TIME,
+  MAX_LOGIN_HISTORY
+} = require("../../config/application.config").security;
+const LOGIN_STATUS = {
+  SUCCESS: 0,
+  FAILURE: 1
+};
+const moment = require("moment");
+const util = require("util");
 
 // passport.use()で、Strategyの設定（configure）を行う
 // ここでは passport-local の設定を行う
@@ -21,15 +34,27 @@ passport.use(
   },
   // VerifyFunction
   async (req, username, password, done) => {
-    let results;
+    let tran;
     try {
-      results = await mysqlClient.executeQuery(await sqlAsync("SELECT_USER_BY_EMAIL"), [username]);
-    } catch(err) {
-      return done(err);
-    }
+      // トランザクション開始
+      tran = await mysqlClient.beginTransaction();
 
-    // 認証処理
-    if (results.length === 1 && results[0].password === password) {
+      // アカウントの情報を取得
+      const results = await mysqlClient.executeQuery(await sqlAsync("SELECT_USER_BY_EMAIL_FOR_UPDATE"), [username]);
+
+      // アカウントの存在確認
+      if (results.length !== 1) {
+        // 認証失敗時は doneの第二引数に falseを指定する
+        req.flash("error", "ユーザー名またはパスワードが間違っています。");
+        req.flash("error", "入力内容を見直してください。");
+        return done(null, false);
+        // passport.authenticate の optionで failureFlash: true を指定していると、
+        // 認証失敗時の done(null, false) の第三引数として、フラッシュメッセージを指定できる
+        // ただし、直接 connect-flash を利用して req.flash を呼んだ方が応用がしやすそう。
+        // 複数メッセージも簡単に設定できるし。
+        // return done(null, false, {"message": "ユーザー名またはパスワードが間違っています"});
+      }
+
       // 認証成功時は適切な user情報を doneの第二引数で返す
       const user = {
         id: results[0].id,
@@ -37,24 +62,90 @@ passport.use(
         email: results[0].email,
         permissions: [PRIVILEGE.NORMAL]
       };
-      // セッションハイジャック対策として sessionを再作成する
-      req.session.regenerate((err) => {
-        if (err) {
-          return done(err);
-        } else {
-          return done(null, user);
+
+      const now = new Date();
+      // 保持件数上限を超えたログイン履歴の削除
+      // ここで削除した後にログイン履歴が追加されるので、実際はMAX+1件の履歴が定常的に残る
+      await tran.executeQuery(await sqlAsync("DELETE_LOGIN_HISTORY"), [
+        user.id, 
+        MAX_LOGIN_HISTORY]
+      );
+
+      // ハッシュ化したパスワード文字列との突合を行う
+      if (!(await bcrypt.compare(password, results[0].password))) {
+        // ログイン履歴の作成（失敗）
+        await tran.executeQuery(await sqlAsync("INSERT_LOGIN_HISTORY"), [
+          user.id, 
+          now, 
+          LOGIN_STATUS.FAILURE]
+        );
+
+        // 一定期間内のログイン失敗回数のカウント
+        const failCounts = await tran.executeQuery(await sqlAsync("COUNT_LOGIN_HISTORY"), [
+          user.id,
+          LOGIN_STATUS.FAILURE,
+          moment(now).subtract(ACCOUNT_LOCK_WINDOW, "minutes").toDate(),
+          now
+        ]);
+        // 失敗回数が閾値以上ならばアカウントロックを行う
+        if (failCounts.length === 1 && failCounts[0].count > ACCOUNT_LOCK_THRESHOLD) {
+          await tran.executeQuery(await sqlAsync("UPDATE_USER_LOCKED"), [
+            now,
+            user.id
+          ]);
+
+          // トランザクション終了
+          await tran.commit();
+          req.flash("error", "パスワード試行回数が許容回数を超えました。");
+          req.flash("error", "このアカウントはロックされます。");
+          return done(null, false);
         }
-      });
-    } else {
-      // 認証失敗時は doneの第二引数に falseを指定する
-      req.flash("error", "ユーザー名またはパスワードが間違っています。");
-      req.flash("error", "入力内容を見直してください。");
-      return done(null, false);
-      // passport.authenticate の optionで failureFlash: true を指定していると、
-      // 認証失敗時の done(null, false) の第三引数として、フラッシュメッセージを指定できる
-      // ただし、直接 connect-flash を利用して req.flash を呼んだ方が応用がしやすそう。
-      // 複数メッセージも簡単に設定できるし。
-      // return done(null, false, {"message": "ユーザー名またはパスワードが間違っています"});
+
+        // トランザクション終了
+        await tran.commit();
+        req.flash("error", "ユーザー名またはパスワードが間違っています。");
+        req.flash("error", "入力内容を見直してください。");
+        return done(null, false);
+      }
+
+      // アカウントのロック状態の確認
+      const locked = moment(results[0].locked);
+      if (locked.isValid()) {
+        if (locked.add(ACCOUNT_LOCK_TIME, "minutes").isSameOrAfter(moment(now))) {
+          // アカウントロック状態
+          // トランザクション終了
+          await tran.commit();
+          req.flash("error", "アカウントがロックされています。");
+          req.flash("error", `${locked.format("YYYY/MM/DD HH:mm:ss")}までログインできません。`);
+          return done(null, false);
+        } else {
+          // アカウントロックの解除
+          await tran.executeQuery(await sqlAsync("UPDATE_USER_LOCKED"), [
+            null,
+            user.id
+          ]);
+        }
+      }
+
+      // ログイン履歴の作成（成功）
+      await tran.executeQuery(await sqlAsync("INSERT_LOGIN_HISTORY"), [
+        user.id, 
+        now, 
+        LOGIN_STATUS.SUCCESS]
+      );
+
+      // セッションハイジャック対策として sessionを再作成する
+      const regenerate = util.promisify(req.session.regenerate).bind(req.session);
+      await regenerate();
+
+      // トランザクション終了
+      await tran.commit();
+      return done(null, user);
+
+    } catch(err) {
+      // ロールバックして終了
+      await tran.rollback();
+      return done(err);
     }
   })
 );

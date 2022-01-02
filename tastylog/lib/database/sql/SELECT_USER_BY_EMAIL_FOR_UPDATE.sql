@@ -11,4 +11,5 @@ FROM t_user
 WHERE 1 = 1
 	AND email = ?
 ORDER BY id
+FOR UPDATE
 ;

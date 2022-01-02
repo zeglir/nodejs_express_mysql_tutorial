@@ -17,6 +17,12 @@ router.get("/login", (req, res, next) => {
 // ログインボタンが押下された場合
 router.post("/login", authenticate());
 
+// ログアウト処理
+router.post("/logout", (req, res, next) => {
+  req.logout();
+  res.redirect("/account/login");
+});
+
 // 口コミ登録系画面（登録・確認・完了）
 // 認可チェックが行われる
 router.use("/reviews", authorize(PRIVILEGE.NORMAL), require("./account.reviews"));
