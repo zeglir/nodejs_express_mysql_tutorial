@@ -65,8 +65,12 @@ app.use(session({
     secure: IS_PRODUCTION
   },
   secret: appconfig.security.SECRET_KEY,
-  resave: false, // sessionに変更がない場合に強制的に保存するかどうか。デフォルトtrueだがfalse推奨
-  saveUninitialized: true, // 生成しただけで未変更のsessionを保存するかどうか
+  // sessionに変更がない場合に強制的に保存するかどうか。デフォルトtrueだがfalse推奨
+  resave: false, 
+  // 生成しただけで未変更のsessionを保存するかどうか。デフォルトtrueだがfalse推奨
+  // trueの場合、サイトを訪問した時点で自動で cookieが発行されるので、
+  // cookie利用に関する法（改正個人情報保護法やGDPRなど）との兼ね合いに注意が必要
+  saveUninitialized: false, 
   name: "sid"
 }));
 // connect-flashを有効にする
@@ -83,11 +87,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// モジュール形式の route handler を使用
-app.use("/account", require("./routes/account"));
-app.use("/search", require("./routes/search"));
-app.use("/shops", require("./routes/shop"));
-app.use("/", require("./routes/index"));
+// 動的コンテンツ配信の設定
+const preDynamicRouting = (req, res, next) => {
+  // クリックジャッキング対策
+  // カスタムヘッダで X-Frame-Options: SAMEORIGIN を設定する
+  res.set("X-Frame-Options", "SAMEORIGIN");
+  next();
+};
+app.use("/account", preDynamicRouting, require("./routes/account"));
+app.use("/search", preDynamicRouting, require("./routes/search"));
+app.use("/shops", preDynamicRouting, require("./routes/shop"));
+app.use("/", preDynamicRouting, require("./routes/index"));
 
 // mysql使用のミドルウェアテストコード
 app.get("/test", async (req, res, next) => {
@@ -128,6 +138,21 @@ app.get("/trantest", async (req, res, next) => {
 // Expressミドルウェアとしてアプリケーションロガーを設定
 // エラー捕捉するので最後に配置
 app.use(expressMWappLogger());
+
+// 404エラーの処理
+app.use((req, res, next) => {
+  res.status(404);
+  res.render("./error/404");
+});
+
+// 500エラーの処理
+app.use((err, req, res, next) => {
+  // ミドルウェア設置ロガーより後ろに配置しているので、ロガーを直接使ってエラーログ出力
+  logger.appLogger.error(err);
+
+  res.status(500);
+  res.render("./error/500");
+});
 
 // アプリケーションを指定ポートで起動
 app.listen(appconfig.port, () => {
