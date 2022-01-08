@@ -11,6 +11,7 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 const flash = require("connect-flash");
+const gracefulShutdown = require("http-graceful-shutdown");
 const express = require("express");
 const app = express();
 
@@ -155,9 +156,46 @@ app.use((err, req, res, next) => {
 });
 
 // アプリケーションを指定ポートで起動
-app.listen(appconfig.port, () => {
+// 返り値は http.Serverオブジェクトで、この後のグレースフルシャットダウンで使用する
+const server = app.listen(appconfig.port, () => {
   // ロガーで直接出力
   // logger.defaultLogger.info(`Application listening on port:${port}`);
   logger.appLogger.info(`Application listening on port:${appconfig.port}`);
+  logger.appLogger.info(`server process id:${process.pid}`);
 });
 
+// http-graceful-shutdown の onShutdown時のコールバック
+// Promiseを返す必要があるので async関数に
+async function shutdown() {
+  try {
+    // コネクションプールの終了
+    const pool_end = require("./lib/database/pool").end;
+    await pool_end();
+    console.log("connection pool closed");
+
+    // log4jsの終了
+    const log4js_shutdown = require("./lib/log/logger").shutdown;
+    await log4js_shutdown();
+    console.log("log4js shutdown");
+  } catch(err) {
+    console.log("error occured in graceful shutdown");
+    throw err;
+  }
+}
+
+// グレースフルシャットダウン
+// Windowsではシグナルの送信がサポートされないため、
+// 別のNode.jsプログラムから process.kill(pid, "SIGINT") などを送っても、
+// 送られたプロセスが単純に強制終了する（シグナルの受信→グレースフルシャットダウンにならない）
+//
+// Windowsでは Ctrl+C が押下された場合のみ、
+// 特別に SIGINTに対応するハンドラが動いてグレースフルシャットダウンが動作する模様
+// http-graceful-shutdownのDEBUGモードで動かしてみると、SIGINTをトリガーに動作していることがわかる
+gracefulShutdown(server, {
+  signals: "SIGINT SIGTERM",
+  timeout: 10000,
+  onShutdown: shutdown,
+  finally: () => {
+    console.log("server shutdown");
+  }
+});

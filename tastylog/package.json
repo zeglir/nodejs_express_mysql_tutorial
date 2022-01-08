@@ -4,12 +4,15 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prebuild": "rimraf ./dist/**/*",
+    "build": "pkg ."
   },
   "author": "zeglir",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^8.4.0"
+    "eslint": "^8.4.0",
+    "pkg": "^5.5.1",
+    "rimraf": "^3.0.2"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
@@ -20,6 +23,7 @@
     "express": "^4.17.1",
     "express-mysql-session": "^2.1.7",
     "express-session": "^1.17.2",
+    "http-graceful-shutdown": "^3.1.5",
     "log4js": "^6.3.0",
     "moment": "^2.29.1",
     "mysql": "^2.18.1",
@@ -27,5 +31,17 @@
     "passport-local": "^1.0.0",
     "round-to": "^5.0.0",
     "serve-favicon": "^2.5.0"
+  },
+  "bin": "./app.js",
+  "pkg": {
+    "assets": [
+      "./views/**/*.ejs",
+      "./lib/**/*.sql",
+      "./public/**/*"
+    ],
+    "targets": [
+      "node16-win"
+    ],
+    "outputPath": "./dist"
   }
 }
