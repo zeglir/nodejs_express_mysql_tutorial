@@ -1,5 +1,8 @@
 const path = require("path");
-const LOG_ROOT_DIR = process.env.LOG_ROOT_DIR || path.join(__dirname, "../logs");
+// const LOG_ROOT_DIR = process.env.LOG_ROOT_DIR || path.join(__dirname, "../logs");
+// pkgでビルドした実行可能ファイルと同じ場所の配下に出力する
+// __dirnameの場合、仮想ディレクトリが取得されるため、配下に出力できずエラーになる
+const LOG_ROOT_DIR = process.env.LOG_ROOT_DIR || path.join(process.cwd(), "./logs");
 
 module.exports = {
   appenders: {

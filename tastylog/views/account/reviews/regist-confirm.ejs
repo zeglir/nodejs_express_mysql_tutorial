@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <%# includeのパスは相対で指定する %> 
+  <%- include("../../_share/metadata.ejs") %> 
+  <%- include("../../_share/stylesheets.ejs") %> 
+  <title>Document</title>
+</head>
+
+<body>
+  <div class="outerframe">
+    <%- include("../../_share/navbar.ejs") %> 
+
+    <main class="container">
+      <%# タイトルラベル %> 
+      <div class="border-bottom my-5">
+        <h1>口コミの投稿</h1>
+      </div>
+
+      <div>
+        <form>
+          <%# CSRF対策用 %> 
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <%# 店舗ID（hidden） %>
+          <input type="hidden" id="shopId" name="shopId" value="<%= shopId %>">
+          <%# 店舗名 %> 
+          <div class="form-group row">
+            <label for="shopName" class="col-sm-2 col-form-label">店舗</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="shopName" name="shopName" value="<%= shopName %>" readonly>
+            </div>
+          </div>
+          <%# 訪問日 %> 
+          <div class="form-group row">
+            <label for="visit" class="col-sm-2 col-form-label">訪問日</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="visit" name="visit" value="<%= review.visitDisp %>" readonly>
+            </div>
+          </div>
+          <%# 評価 %> 
+          <div class="form-group row">
+            <label for="score" class="col-sm-2 col-form-label">評価</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="score" name="score" value="<%= review.score %>" readonly>
+            </div>
+          </div>
+          <%# 本文 %> 
+          <div class="form-group row">
+            <label for="description" class="col-sm-2 col-form-label">本文</label>
+            <div class="col-sm-10">
+              <textarea class="form-control" name="description" id="description" rows="5" readonly><%= review.description || "" %></textarea>
+            </div>
+          </div>
+          <%# 修正 or 登録 %> 
+          <div class="form-group row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-10">
+              <%# HTML dataset API : data-* で指定された属性をスクリプトで読み取って formの属性を動的に変える %> 
+              <input type="submit" class="btn btn-primary" data-method="POST" data-action="/account/reviews/regist/<%= shopId %>" value="修正">
+              <input type="submit" class="btn btn-primary" data-method="POST" data-action="/account/reviews/regist/execute" value="登録">
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+    </main>
+
+    <%- include("../../_share/footer.ejs") %> 
+  </div>
+  <%- include("../../_share/javascripts.ejs") %> 
+
+  <%# formの method, actionを submitボタンに応じて切り替えるスクリプト %> 
+  <script src="/public/javascripts/regist.js"></script>
+</body>
+</html>

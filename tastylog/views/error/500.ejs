@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <%# includeのパスは相対で指定する %> 
+  <%- include("../_share/metadata.ejs") %> 
+  <%- include("../_share/stylesheets.ejs") %> 
+  <title>Document</title>
+</head>
+
+<body>
+  <div class="outerframe">
+    <%- include("../_share/navbar.ejs") %> 
+
+    <%# containerを中央に均等配置 %> 
+    <main role="main" class="container d-flex justify-content-md-center">
+      <div class="align-self-center text-center col-md-8">
+        <div class="display-1">500</div>
+        <div>Internal Server Error</div>
+      </div>
+    </main>
+
+    <%- include("../_share/footer.ejs") %> 
+  </div>
+  <%- include("../_share/javascripts.ejs") %> 
+</body>
+</html>
